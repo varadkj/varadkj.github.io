@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "HTB Postman Walkthrough - Redis Misconfigs & SSH Cracking"
-date: 2026-01-19 12:00:00 -0500
+date: 2026-01-19 01:00:00 -0500
 categories: [Walkthrough, HackTheBox]
 tags: [linux, redis, ssh, privesc, ctf, cybersecurity]
 image:
