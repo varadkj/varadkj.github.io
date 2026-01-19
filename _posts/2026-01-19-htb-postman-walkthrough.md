@@ -15,7 +15,7 @@ We explore standard enumeration, find a hidden Webmin instance, and exploit a Re
 
 ### Watch the Walkthrough
 
-<iframe width="560" height="315" src="https://youtu.be/NAHX8QVYXnU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NAHX8QVYXnU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Key Concepts
 * **NMAP Scanning:** Advanced techniques for service discovery.
