@@ -17,6 +17,23 @@ We explore standard enumeration, find a hidden Webmin instance, and exploit a Re
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/NAHX8QVYXnU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+### Timestamps
+
+| Time | Topic |
+| :--- | :--- |
+| **00:00** | Intro and connecting to HTB |
+| **01:53** | NMAP Scan Techniques |
+| **05:00** | Going over NMAP Output |
+| **07:15** | Port 80 Enumeration |
+| **10:36** | Port 10000 Enumeration |
+| **12:00** | Redis Overview & Theory |
+| **18:29** | Back to Port 80 |
+| **18:52** | Port 10000 Revisit |
+| **22:09** | Exploiting Redis Misconfigurations |
+| **33:55** | Redis SSH Enumeration |
+| **39:45** | Cracking id_rsa.bak |
+| **41:55** | SSH as Matt / Privesc to Root |
+
 ### Key Concepts
 * **NMAP Scanning:** Advanced techniques for service discovery.
 * **Redis Exploitation:** Using remote command execution to drop SSH keys.
