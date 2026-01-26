@@ -4,7 +4,7 @@ date: 2026-01-26 12:00:00 +0530
 categories: [Walkthrough, HackTheBox]
 tags: [Windows, Jenkins, KeePass, Hashcat, PowerShell, ADS]
 image:
-  path: /assets/img/thumbnails/jeeves_thumb.jpg
+  path: /assets/img/jeeves_thumb.jpg
   alt: HTB Jeeves Thumbnail
 ---
 
