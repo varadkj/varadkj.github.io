@@ -83,6 +83,8 @@ To get a baseline for "maximum noise," I ran an iPerf3 flood from the Mac to a K
 **Analysis:**
 This test generated the most aggressive noise floor, serving as a useful baseline for what "100% network load" sounds like in the EMF spectrum.
 
+**Furthermore, if you listen very closely to the audio, you can actually hear distinct peaks corresponding to every individual iPerf burst as the packets are blasted out.**
+
 ![Spectrogram of iPerf Flood](/assets/images/iperf-spectrogram-rec.png)
 
 ## The "So What?" (Implications)
@@ -95,8 +97,6 @@ In a high-security environment (like an air-gapped facility), a bad actor wouldn
 3.  Is the user typing or moving the mouse?
 
 While I'm not a physics expert, this project validated that **hardware leakage is real**, and with surprisingly cheap equipment (a karaoke mic!), we can visualize the invisible data flowing through our devices.
-
----
 
 ## What's Next: The PC Frontier
 
@@ -111,8 +111,6 @@ From my initial "listening" sessions, I have already identified distinct signatu
 I plan to document these findings in a future post, diving deeper into how different hardware architectures leak information differently. This accidental discovery has opened a rabbit hole I intend to explore fully.
 
 ---
-
-
 ### 📂 **Data & Resources**
 For those interested in analyzing the raw data, I have uploaded the original `.wav` files and high-resolution spectrograms.
 
