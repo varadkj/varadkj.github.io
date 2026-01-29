@@ -97,6 +97,22 @@ In a high-security environment (like an air-gapped facility), a bad actor wouldn
 While I'm not a physics expert, this project validated that **hardware leakage is real**, and with surprisingly cheap equipment (a karaoke mic!), we can visualize the invisible data flowing through our devices.
 
 ---
+
+## What's Next: The PC Frontier
+
+My curiosity is now officially hooked. While the MacBook Pro provided a clean testing ground, I have already started preliminary tests on my main desktop rig (**Ryzen 7700X + RTX GPU**), and the results are even more chaotic.
+
+From my initial "listening" sessions, I have already identified distinct signatures for:
+* **SSD Read/Writes:** High-speed NVMe operations have a very specific "scratchy" texture in the EMF spectrum.
+* **GPU Workloads:** The difference between a CUDA core load and a memory-heavy texture load is audible.
+* **The POST Sequence:** Listening to the motherboard power on and cycle through the POST (Power-On Self-Test) sounds like a robotic handshake.
+* **PSU Strain:** The Power Supply Unit emits the most distinct, aggression-filled whine when pushed under heavy load.
+
+I plan to document these findings in a future post, diving deeper into how different hardware architectures leak information differently. This accidental discovery has opened a rabbit hole I intend to explore fully.
+
+---
+
+
 ### 📂 **Data & Resources**
 For those interested in analyzing the raw data, I have uploaded the original `.wav` files and high-resolution spectrograms.
 
