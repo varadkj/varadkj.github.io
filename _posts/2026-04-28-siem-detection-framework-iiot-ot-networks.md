@@ -6,7 +6,7 @@ tags: [siem, ics, ot, purdue, mitre-attack, iec-62443, zeek, ton-iot, detection-
 pin: true
 math: false
 mermaid: false
-description: A walkthrough of the SIEM detection framework I built for my MS capstone — Purdue Reference Architecture asset modeling, MITRE ATT&CK for ICS rule design, two-tier detection, and multi-stage kill chain correlation against the TON_IoT testbed. Sponsored by Cummins Inc.
+description: A walkthrough of the SIEM detection framework I built for my Capstone project at NEU delivering  Purdue Reference Architecture asset modeling, MITRE ATT&CK for ICS rule design, two-tier detection, and multi-stage kill chain correlation against the TON_IoT testbed. Sponsored by Cummins Inc.
 ---
 
 > This was my MS Cybersecurity capstone at Northeastern University, sponsored by **Cummins Inc.** and built with three teammates: Manav Jariwala, Neha Bhende, and SelvaKumar Selvaraj Anand. I focused on the AI Analyst integration and detection engine refinement; the design and rule authoring were a team effort.
@@ -85,9 +85,9 @@ The KillChainTracker is what stitches atomic alerts into incidents. Two correlat
 
 This is the highest-value piece of the framework, in my opinion. Most SIEMs drown analysts in atomic alerts; we wanted the dashboard to show *attacks*, not events.
 
-## AI Analyst (my contribution)
+## AI Analyst
 
-The dashboard has a chat interface backed by Claude Haiku, with a custom RAG layer that injects four context blocks into every prompt:
+The dashboard has a chat interface backed by Claude , with a custom RAG layer that injects four context blocks into every prompt:
 
 1. **Alert statistics** — counts by rule, severity, zone
 2. **Detection report** — recent triggered rules with descriptions
@@ -96,7 +96,7 @@ The dashboard has a chat interface backed by Claude Haiku, with a custom RAG lay
 
 A SOC analyst can ask "what's happening on `192.168.1.193`?" or "which assets are involved in the active ransomware incident?" and get a coherent answer grounded in actual current state. No hallucinated IPs, no invented rules. Every claim the model can make is anchored to the injected context.
 
-## Honest scope notes
+## Scope notes!!
 
 If you're reading this evaluating whether the framework would translate to your environment, the things I'd want to know:
 

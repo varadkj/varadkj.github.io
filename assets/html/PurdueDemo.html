@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Flow and Asset Classification — Purdue Reference Model</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e14;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.wrap{max-width:760px;width:100%;margin:0 auto;padding:16px 12px}
+h2{font-size:16px;font-weight:500;color:#e6edf3;text-align:center;margin-bottom:3px}
+.sub{font-size:11px;color:#8b949e;text-align:center;margin-bottom:14px}
+.canvas{position:relative;background:#0d1117;border:0.5px solid #21262d;border-radius:12px;padding:20px 20px 16px;overflow:hidden}
+.row{display:flex;align-items:center;margin:0 0 6px;position:relative;z-index:3}
+.lvl{width:68px;font-size:8px;color:#484f58;font-weight:500;flex-shrink:0;text-align:right;padding-right:10px;line-height:1.25;text-transform:uppercase;letter-spacing:.5px;transition:all .4s}
+.lvl-desc{font-size:7px;color:#8b949e;text-align:center;margin:-2px 0 4px 68px;letter-spacing:.2px;transition:opacity .4s}
+.nodes{display:flex;gap:6px;flex:1}
+.nd{background:#161b22;border:0.5px solid #21262d;border-radius:6px;padding:8px 10px;font-size:10px;color:#b1bac4;text-align:center;flex:1;line-height:1.3;position:relative;z-index:3;transition:all .4s}
+.nd small{display:block;color:#484f58;font-size:8px;margin-top:2px;transition:all .4s}
+.nd .ip{display:none;font-size:9px;margin-top:3px;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;letter-spacing:.3px;font-weight:500;transition:all .3s}
+.nd .ip .inferred{opacity:.5;font-style:italic}
+.nd .zone-tag{display:none;font-size:7px;letter-spacing:.5px;font-weight:600;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-top:4px}
+.fw-row{display:flex;align-items:center;margin:3px 0 3px 68px;position:relative;z-index:3}
+.fw{font-size:7px;color:#d29922;background:#d2992210;border:0.5px solid #d2992233;border-radius:3px;padding:2px 8px;font-weight:500;letter-spacing:.5px}
+.fw-line{flex:1;height:0.5px;background:#d2992218;margin-left:6px}
+.conn-label{font-size:7px;color:#484f58;text-align:center;margin:2px 0 2px 68px;letter-spacing:.3px}
+.spacer{height:2px}
+.legend{display:flex;gap:16px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-size:10px;color:#8b949e}
+.leg-arrow{font-size:14px;font-weight:700}
+.mode-toggle{display:flex;gap:0;justify-content:center;margin-bottom:14px;border:0.5px solid #21262d;border-radius:8px;overflow:hidden;width:fit-content;margin-left:auto;margin-right:auto}
+.mode-btn{padding:8px 16px;font-size:11px;color:#8b949e;background:#0d1117;border:none;cursor:pointer;font-family:inherit;transition:all .25s}
+.mode-btn.active{background:#1c2433;color:#e6edf3;font-weight:500}
+.mode-btn:hover{color:#c9d1d9}
+.arrow-particle{position:absolute;pointer-events:none;z-index:4;font-size:11px;font-weight:700;opacity:0;filter:drop-shadow(0 0 4px var(--clr));transition:none}
+
+.asset-mode .nd{padding:10px 10px 8px}
+.asset-mode .nd .ip{display:block}
+.asset-mode .nd .zone-tag{display:inline-block}
+.asset-mode .lvl-desc{opacity:0;height:0;margin:0}
+
+.asset-mode .nd.zone-ot{border-color:#3fb95044;background:#3fb95008}
+.asset-mode .nd.zone-ot .ip{color:#3fb950}
+.asset-mode .nd.zone-ot .zone-tag{background:#3fb95018;color:#3fb950;border:0.5px solid #3fb95033}
+
+.asset-mode .nd.zone-dmz{border-color:#58a6ff44;background:#58a6ff08}
+.asset-mode .nd.zone-dmz .ip{color:#58a6ff}
+.asset-mode .nd.zone-dmz .zone-tag{background:#58a6ff18;color:#58a6ff;border:0.5px solid #58a6ff33}
+
+.asset-mode .nd.zone-idmz{border-color:#d2a8ff44;background:#d2a8ff08}
+.asset-mode .nd.zone-idmz .ip{color:#d2a8ff}
+.asset-mode .nd.zone-idmz .zone-tag{background:#d2a8ff18;color:#d2a8ff;border:0.5px solid #d2a8ff33}
+
+.asset-mode .nd.zone-ent{border-color:#f0883e44;background:#f0883e08}
+.asset-mode .nd.zone-ent .ip{color:#f0883e}
+.asset-mode .nd.zone-ent .zone-tag{background:#f0883e18;color:#f0883e;border:0.5px solid #f0883e33}
+
+.legend-flow{transition:opacity .4s}
+.legend-asset{transition:opacity .4s}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2>Data flow and asset classification</h2>
+<p class="sub">Purdue reference model</p>
+<div class="mode-toggle">
+<button class="mode-btn active" onclick="setMode('telemetry',this)">OT telemetry</button>
+<button class="mode-btn" onclick="setMode('siem',this)">SIEM pipeline</button>
+<button class="mode-btn" onclick="setMode('assets',this)">Asset classification</button>
+</div>
+<div class="canvas" id="canvas">
+
+<!-- L4 Enterprise -->
+<div class="row"><div class="lvl">Level 4<br>Enterprise</div><div class="nodes">
+<div class="nd zone-ent" id="soc">SIEM / SOC platform<small>Alert correlation and response</small><div class="ip">&mdash;</div><div class="zone-tag">Enterprise</div></div>
+<div class="nd zone-ent" id="dvwa">DVWA<small>Vulnerable web app</small><div class="ip">.192</div><div class="zone-tag">Enterprise</div></div>
+<div class="nd zone-ent" id="shepherd">OWASP Shepherd<small>Vulnerable web app</small><div class="ip">.184</div><div class="zone-tag">Enterprise</div></div>
+<div class="nd zone-ent" id="meta3">Metasploitable3<small>Vulnerable VM</small><div class="ip">.194</div><div class="zone-tag">Enterprise</div></div>
+</div></div>
+<div class="lvl-desc">Corporate business systems, ERP, SOC — no direct OT access</div>
+<div class="fw-row"><div class="fw">FIREWALL</div><div class="fw-line"></div></div>
+
+<!-- L3.5 IDMZ -->
+<div class="row"><div class="lvl">Level 3.5<br>IDMZ</div><div class="nodes">
+<div class="nd zone-idmz" id="gw">Security gateway<small>Log forwarder</small><div class="ip">&mdash;</div><div class="zone-tag">IDMZ</div></div>
+<div class="nd zone-idmz" id="siemcol">SIEM collector<small>Event normalization</small><div class="ip">&mdash;</div><div class="zone-tag">IDMZ</div></div>
+</div></div>
+<div class="lvl-desc">Secure buffer between IT and OT — log forwarding, event normalization, no direct control</div>
+<div class="fw-row"><div class="fw">FIREWALL</div><div class="fw-line"></div></div>
+<div class="conn-label">Telemetry alerts</div>
+
+<!-- L3 Operations -->
+<div class="row"><div class="lvl">Level 3<br>Operations</div><div class="nodes">
+<div class="nd zone-dmz" id="seconion">Passive OT sensor<small>Security Onion / Zeek</small><div class="ip">.180</div><div class="zone-tag">OT-DMZ</div></div>
+<div class="nd zone-dmz" id="orch">Historian<small>Data archive</small><div class="ip">.190</div><div class="zone-tag">OT-DMZ</div></div>
+<div class="nd zone-dmz" id="mqtt">Application server<small>Node-RED / MQTT broker</small><div class="ip">.152</div><div class="zone-tag">OT-DMZ</div></div>
+</div></div>
+<div class="lvl-desc">Site-wide operations — passive monitoring, historians, application servers</div>
+<div class="fw-row"><div class="fw">FIREWALL</div><div class="fw-line"></div></div>
+<div class="conn-label">Operational OT data</div>
+
+<!-- L2 Supervisory -->
+<div class="row"><div class="lvl">Level 2<br>Supervisory</div><div class="nodes">
+<div class="nd zone-ot" id="hmi">HMI<small>Windows 7 — operator interface</small><div class="ip">.193</div><div class="zone-tag">OT</div></div>
+<div class="nd zone-ot" id="scada">SCADA<small>Windows 10 — process control</small><div class="ip">.195</div><div class="zone-tag">OT</div></div>
+<div class="nd zone-ot" id="ews">Engineering WS<small>Configuration and programming</small><div class="ip">&mdash;</div><div class="zone-tag">OT</div></div>
+</div></div>
+<div class="lvl-desc">Operator workstations — real-time monitoring, SCADA displays, control commands</div>
+<div class="conn-label">OT protocol traffic</div>
+
+<!-- L1 Control -->
+<div class="row"><div class="lvl">Level 1<br>Control</div><div class="nodes">
+<div class="nd zone-ot" id="plc1">PLC<small>Programmable logic controller</small><div class="ip">&mdash;</div><div class="zone-tag">OT</div></div>
+<div class="nd zone-ot" id="router">Gateway router<small>Network edge device</small><div class="ip">.1</div><div class="zone-tag">OT</div></div>
+<div class="nd zone-ot" id="rtu">RTU<small>Remote terminal unit</small><div class="ip">&mdash;</div><div class="zone-tag">OT</div></div>
+</div></div>
+<div class="lvl-desc">Local controllers — execute control logic, read sensors, drive actuators</div>
+<div class="conn-label">Fieldbus / IO signals</div>
+
+<!-- L0 Physical -->
+<div class="row"><div class="lvl">Level 0<br>Process</div><div class="nodes">
+<div class="nd zone-ot" id="s1">IoT sensor<small>Temperature / weather</small><div class="ip"><span class="inferred">.79 .133</span></div><div class="zone-tag">OT-Field</div></div>
+<div class="nd zone-ot" id="s2">IoT sensor<small>Light / motion</small><div class="ip"><span class="inferred">.169</span></div><div class="zone-tag">OT-Field</div></div>
+<div class="nd zone-ot" id="s3">IoT sensor<small>Smart device</small><div class="ip"><span class="inferred">.49</span></div><div class="zone-tag">OT-Field</div></div>
+<div class="nd zone-ot" id="s4">Smart TV / phones<small>Samsung TV, iPhones</small><div class="ip"><span class="inferred">DHCP</span></div><div class="zone-tag">OT-Field</div></div>
+</div></div>
+<div class="lvl-desc">Physical field devices — sensors, actuators, IoT endpoints generating raw process data</div>
+
+</div>
+
+<div class="legend-flow" id="legendFlow">
+<div class="legend">
+<div class="leg"><span class="leg-arrow" style="color:#3fb950">&#x25B2;</span> OT process data</div>
+<div class="leg"><span class="leg-arrow" style="color:#58a6ff">&#x25B2;</span> Log / telemetry</div>
+<div class="leg"><span class="leg-arrow" style="color:#d2a8ff">&#x25B2;</span> Alerts</div>
+</div>
+</div>
+<div class="legend-asset" id="legendAsset" style="opacity:0;height:0;overflow:hidden">
+<div class="legend">
+<div class="leg"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3fb95033;border:0.5px solid #3fb95066"></span> OT / OT-Field</div>
+<div class="leg"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#58a6ff33;border:0.5px solid #58a6ff66"></span> OT-DMZ</div>
+<div class="leg"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d2a8ff33;border:0.5px solid #d2a8ff66"></span> IDMZ</div>
+<div class="leg"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f0883e33;border:0.5px solid #f0883e66"></span> Enterprise</div>
+</div>
+</div>
+</div>
+
+<script>
+var mode='telemetry';
+var cv=document.getElementById('canvas');
+var flowOn=true;
+
+function setMode(m,btn){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  var isAsset=m==='assets';
+  flowOn=!isAsset;
+  if(isAsset){
+    cv.classList.add('asset-mode');
+    document.getElementById('legendFlow').style.opacity='0';
+    document.getElementById('legendFlow').style.height='0';
+    document.getElementById('legendFlow').style.overflow='hidden';
+    document.getElementById('legendAsset').style.opacity='1';
+    document.getElementById('legendAsset').style.height='auto';
+    document.getElementById('legendAsset').style.overflow='visible';
+    document.querySelectorAll('.arrow-particle').forEach(function(p){p.remove()});
+  } else {
+    cv.classList.remove('asset-mode');
+    document.getElementById('legendFlow').style.opacity='1';
+    document.getElementById('legendFlow').style.height='auto';
+    document.getElementById('legendFlow').style.overflow='visible';
+    document.getElementById('legendAsset').style.opacity='0';
+    document.getElementById('legendAsset').style.height='0';
+    document.getElementById('legendAsset').style.overflow='hidden';
+  }
+}
+
+function pos(el){
+  var r=el.getBoundingClientRect(),c=cv.getBoundingClientRect();
+  return{x:r.left-c.left+r.width/2,y:r.top-c.top+r.height/2}
+}
+
+function angle(fx,fy,tx,ty){
+  return Math.atan2(ty-fy,tx-fx)*180/Math.PI;
+}
+
+function emit(fromEl,toEl,color,dur){
+  if(!flowOn) return;
+  var f=pos(fromEl),t=pos(toEl);
+  var deg=angle(f.x,f.y,t.x,t.y);
+  var a=document.createElement('div');
+  a.className='arrow-particle';
+  a.style.setProperty('--clr',color);
+  a.style.color=color;
+  a.innerHTML='&#x25B2;';
+  a.style.left=f.x+'px';
+  a.style.top=f.y+'px';
+  a.style.transform='translate(-50%,-50%) rotate('+(deg+90)+'deg)';
+  a.style.opacity='0';
+  cv.appendChild(a);
+  requestAnimationFrame(function(){
+    a.style.transition='left '+dur+'s cubic-bezier(.4,0,.2,1), top '+dur+'s cubic-bezier(.4,0,.2,1), opacity .25s';
+    a.style.opacity='0.9';
+    a.style.left=t.x+'px';
+    a.style.top=t.y+'px';
+  });
+  setTimeout(function(){a.style.opacity='0'},dur*1000-250);
+  setTimeout(function(){if(a.parentNode)a.remove()},dur*1000+100);
+}
+
+function R(){return Math.random()}
+
+function telemetryTick(){
+  var g='#3fb950';
+  if(R()>.2) emit(document.getElementById('s1'),document.getElementById('plc1'),g,1.4);
+  if(R()>.3) emit(document.getElementById('s2'),document.getElementById('router'),g,1.4);
+  if(R()>.4) emit(document.getElementById('s3'),document.getElementById('rtu'),g,1.4);
+  if(R()>.3) emit(document.getElementById('plc1'),document.getElementById('hmi'),g,1.3);
+  if(R()>.4) emit(document.getElementById('router'),document.getElementById('scada'),g,1.3);
+  if(R()>.4) emit(document.getElementById('rtu'),document.getElementById('scada'),g,1.3);
+  if(R()>.5) emit(document.getElementById('hmi'),document.getElementById('orch'),g,1.5);
+  if(R()>.5) emit(document.getElementById('scada'),document.getElementById('mqtt'),g,1.5);
+}
+
+function siemTick(){
+  var b='#58a6ff',p='#d2a8ff',g='#3fb950';
+  if(R()>.4) emit(document.getElementById('s1'),document.getElementById('plc1'),g,1.3);
+  if(R()>.5) emit(document.getElementById('plc1'),document.getElementById('hmi'),g,1.2);
+  if(R()>.3) emit(document.getElementById('hmi'),document.getElementById('seconion'),b,1.2);
+  if(R()>.3) emit(document.getElementById('scada'),document.getElementById('seconion'),b,1.2);
+  if(R()>.4) emit(document.getElementById('ews'),document.getElementById('seconion'),b,1.2);
+  if(R()>.3) emit(document.getElementById('seconion'),document.getElementById('gw'),b,1.4);
+  if(R()>.4) emit(document.getElementById('orch'),document.getElementById('gw'),b,1.4);
+  if(R()>.4) emit(document.getElementById('gw'),document.getElementById('siemcol'),b,1.3);
+  if(R()>.4) emit(document.getElementById('siemcol'),document.getElementById('soc'),p,1.5);
+}
+
+setInterval(function(){
+  if(mode==='telemetry') telemetryTick();
+  else if(mode==='siem') siemTick();
+},700);
+</script>
+</body>
+</html>
