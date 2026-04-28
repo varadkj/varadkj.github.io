@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIEM Log Normalization Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0e14;
+    --bg-card: #13161f;
+    --bg-hover: #181c28;
+    --border: #252a38;
+    --text: #d4d8e8;
+    --text-dim: #6b7394;
+    --text-bright: #f1f3fa;
+    --accent: #3b82f6;
+    --critical: #ff3b5f;
+    --high: #ff6b4a;
+    --medium: #ffa726;
+    --low: #42a5f5;
+    --info: #78909c;
+    --success: #4caf50;
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.08);
+    --purple-border: rgba(167,139,250,0.2);
+    --teal: #2dd4bf;
+    --teal-bg: rgba(45,212,191,0.08);
+    --teal-border: rgba(45,212,191,0.2);
+    --coral: #fb923c;
+    --coral-bg: rgba(251,146,60,0.08);
+    --coral-border: rgba(251,146,60,0.2);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96,165,250,0.08);
+    --blue-border: rgba(96,165,250,0.2);
+    --gray-accent: #94a3b8;
+    --gray-bg: rgba(148,163,184,0.06);
+    --gray-border: rgba(148,163,184,0.15);
+    --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .page-header .sub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .stage {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .stage:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: var(--bg-hover);
+  }
+
+  .stage-accent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+  }
+
+  .num {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 1px solid;
+  }
+
+  .stage-content { flex: 1; min-width: 0; }
+
+  .stage-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stage-title .class-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    opacity: 0.8;
+  }
+
+  .stage-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .stage-desc .line {
+    display: block;
+    margin-top: 3px;
+  }
+
+  .mono-block {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.85;
+    color: var(--text);
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 6px;
+  }
+
+  .fields-row {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 3px;
+    letter-spacing: 0.2px;
+  }
+  .tag-rule { background: rgba(255,59,95,0.12); color: var(--critical); border: 1px solid rgba(255,59,95,0.15); }
+  .tag-score { background: rgba(255,167,38,0.12); color: var(--medium); border: 1px solid rgba(255,167,38,0.15); }
+  .tag-chain { background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.15); }
+  .tag-out { background: rgba(76,175,80,0.12); color: var(--success); border: 1px solid rgba(76,175,80,0.15); }
+
+  .severity-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .sev-chip {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+  }
+  .sev-critical { background: rgba(255,59,95,0.12); color: var(--critical); }
+  .sev-high { background: rgba(255,107,74,0.12); color: var(--high); }
+  .sev-medium { background: rgba(255,167,38,0.12); color: var(--medium); }
+  .sev-low { background: rgba(66,165,245,0.12); color: var(--low); }
+  .sev-info { background: rgba(120,144,156,0.12); color: var(--info); }
+
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 44px;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+  .conn-line {
+    width: 1.5px;
+    height: 20px;
+    background: var(--border);
+  }
+  .conn-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--border);
+  }
+  .conn-label {
+    position: absolute;
+    left: calc(50% + 24px);
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 2px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .num-gray { background: var(--gray-bg); color: var(--gray-accent); border-color: var(--gray-border); }
+  .acc-gray { background: var(--gray-accent); }
+  .num-blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .acc-blue { background: var(--blue); }
+  .num-purple { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+  .acc-purple { background: var(--purple); }
+  .num-coral { background: var(--coral-bg); color: var(--coral); border-color: var(--coral-border); }
+  .acc-coral { background: var(--coral); }
+  .num-teal { background: var(--teal-bg); color: var(--teal); border-color: var(--teal-border); }
+  .acc-teal { background: var(--teal); }
+
+  .class-gray { background: var(--gray-bg); color: var(--gray-accent); }
+  .class-blue { background: var(--blue-bg); color: var(--blue); }
+  .class-purple { background: var(--purple-bg); color: var(--purple); }
+  .class-coral { background: var(--coral-bg); color: var(--coral); }
+  .class-teal { background: var(--teal-bg); color: var(--teal); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .stage, .connector {
+    animation: fadeUp 0.4s ease both;
+  }
+  .stage:nth-child(1)  { animation-delay: 0.05s; }
+  .stage:nth-child(3)  { animation-delay: 0.15s; }
+  .stage:nth-child(5)  { animation-delay: 0.25s; }
+  .stage:nth-child(7)  { animation-delay: 0.35s; }
+  .stage:nth-child(9)  { animation-delay: 0.45s; }
+  .stage:nth-child(11) { animation-delay: 0.55s; }
+  .connector:nth-child(2)  { animation-delay: 0.10s; }
+  .connector:nth-child(4)  { animation-delay: 0.20s; }
+  .connector:nth-child(6)  { animation-delay: 0.30s; }
+  .connector:nth-child(8)  { animation-delay: 0.40s; }
+  .connector:nth-child(10) { animation-delay: 0.50s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="page-header">
+    <h1>SIEM Log Normalization Pipeline</h1>
+    <div class="sub">Zeek conn.log &rarr; SIEMAlert + Incident &nbsp;&nbsp;│&nbsp;&nbsp; Team 3 Capstone</div>
+  </div>
+
+  <div class="pipeline">
+
+    <!-- Stage 0 -->
+    <div class="stage">
+      <div class="stage-accent acc-gray"></div>
+      <div class="num num-gray">0</div>
+      <div class="stage-content">
+        <div class="stage-title">Raw Zeek conn.log</div>
+        <div class="stage-desc">
+          Tab-separated log with <code style="color:var(--text);font-family:var(--font-mono);font-size:12px">#</code>-prefixed header block defining field names, separator, and log type
+        </div>
+        <div class="fields-row">ts &nbsp; uid &nbsp; id.orig_h &nbsp; id.orig_p &nbsp; id.resp_h &nbsp; id.resp_p &nbsp; proto &nbsp; service &nbsp; duration &nbsp; orig_bytes &nbsp; resp_bytes &nbsp; orig_pkts &nbsp; resp_pkts &nbsp; conn_state</div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="conn-line"></div><div class="conn-arrow"></div>
+      <div class="conn-label">raw TSV rows</div>
+    </div>
+
+    <!-- Stage 1 -->
+    <div class="stage">
+      <div class="stage-accent acc-blue"></div>
+      <div class="num num-blue">1</div>
+      <div class="stage-content">
+        <div class="stage-title">Parse log structure <span class="class-name class-blue">ZeekLogParser</span></div>
+        <div class="stage-desc">
+          Read <code style="color:var(--text);font-family:var(--font-mono);font-size:12px">#</code> header directives for separator, field names, and log type
+          <span class="line">Split each data row by separator, zip with field names into a key-value record</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="conn-line"></div><div class="conn-arrow"></div>
+      <div class="conn-label">dict per row</div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="stage">
+      <div class="stage-accent acc-purple"></div>
+      <div class="num num-purple">2</div>
+      <div class="stage-content">
+        <div class="stage-title">Normalize and enrich <span class="class-name class-purple">AssetEnricher</span></div>
+        <div class="stage-desc">
+          Resolve field name variants &mdash; id.orig_h, src_ip, orig_h all map to a single src_ip
+          <span class="line">Type-cast strings to int ports, float duration, int byte and packet counts</span>
+          <span class="line">Look up each IP in the asset registry for Purdue level, zone, and architecture role</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="conn-line"></div><div class="conn-arrow"></div>
+      <div class="conn-label">enriched dict</div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="stage">
+      <div class="stage-accent acc-coral"></div>
+      <div class="num num-coral">3</div>
+      <div class="stage-content">
+        <div class="stage-title">Detect and score <span class="class-name class-coral">DetectionEngine</span></div>
+        <div class="stage-desc">
+          Rule matching (<span class="tag tag-rule">R001</span>&ndash;<span class="tag tag-rule">R018</span>) &rarr; generates SIEMAlert per match
+          <span class="line">Dedup: skip if same (rule_id, src, dst) seen within 300s window</span>
+        </div>
+        <div class="mono-block">
+          <div style="color:var(--text-dim);font-size:10.5px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Severity scoring &mdash; 3-factor additive model</div>
+          <span class="tag tag-score">score_asset</span> = ASSET_CRITICALITY[dst_purdue] &nbsp; 0&ndash;3<br>
+          <span style="color:var(--text-dim);margin-left:24px">L0/L1/L2 = 3 &nbsp;&nbsp; L3/L3.5 = 2 &nbsp;&nbsp; L4 = 1 &nbsp;&nbsp; External = 0</span><br><br>
+          <span class="tag tag-score">score_conf</span>&nbsp; = CONFIDENCE[confidence_key] &nbsp; 1&ndash;3<br>
+          <span style="color:var(--text-dim);margin-left:24px">KNOWN_ATTACKER_IP = 3 &nbsp;&nbsp; PROTOCOL_ANOMALY = 2 &nbsp;&nbsp; HEURISTIC = 1</span><br><br>
+          <span class="tag tag-score">score_zone</span>&nbsp; = ZONE_CONTEXT[zone_key] &nbsp; 0&ndash;2<br>
+          <span style="color:var(--text-dim);margin-left:24px">OT_FIELD_TARGETED = 2 &nbsp;&nbsp; FIREWALL_CROSSED = 2 &nbsp;&nbsp; PURDUE_VIOLATED = 1 &nbsp;&nbsp; SAME_ZONE = 0</span><br><br>
+          <span style="color:var(--text-bright)">score_total = asset + conf + zone &nbsp;&nbsp; (range 0&ndash;8)</span>
+        </div>
+        <div class="severity-bar">
+          <span class="sev-chip sev-critical">CRITICAL &ge; 8</span>
+          <span class="sev-chip sev-high">HIGH &ge; 6</span>
+          <span class="sev-chip sev-medium">MEDIUM &ge; 4</span>
+          <span class="sev-chip sev-low">LOW &ge; 2</span>
+          <span class="sev-chip sev-info">INFO &lt; 2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="conn-line"></div><div class="conn-arrow"></div>
+      <div class="conn-label">SIEMAlert</div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="stage">
+      <div class="stage-accent acc-purple"></div>
+      <div class="num num-purple">4</div>
+      <div class="stage-content">
+        <div class="stage-title">Kill chain correlation <span class="class-name class-purple">KillChainTracker</span></div>
+        <div class="stage-desc">
+          Group alerts by attacker IP within time-windowed chain profiles
+          <span class="line"><span class="tag tag-chain">ransomware</span> R010 &rarr; R014 &rarr; R016 &rarr; R017 &rarr; R018 &nbsp;&nbsp; 600s window, &ge; 2 stages</span>
+          <span class="line"><span class="tag tag-chain">ddos</span> R010 &rarr; R001 &rarr; R008 &rarr; R009 &nbsp;&nbsp; 300s window, &ge; 3 stages to qualify</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="conn-line"></div><div class="conn-arrow"></div>
+      <div class="conn-label">Incident</div>
+    </div>
+
+    <!-- Output -->
+    <div class="stage">
+      <div class="stage-accent acc-teal"></div>
+      <div class="num num-teal" style="font-size:10px;letter-spacing:-0.3px">OUT</div>
+      <div class="stage-content">
+        <div class="stage-title">Output</div>
+        <div class="stage-desc">
+          <span class="tag tag-out">SIEMAlert</span> Normalized fields, rule ID, MITRE ICS technique, severity score, description
+          <span class="line" style="margin-top:6px"><span class="tag tag-out">Incident</span> Chain type, attacker IP, stages reached, victim IPs, narrative, duration</span>
+          <span class="line" style="margin-top:6px;color:var(--text-dim)">&rarr; NDJSON alert stream &nbsp;&nbsp;│&nbsp;&nbsp; NDJSON incident stream &nbsp;&nbsp;│&nbsp;&nbsp; Summary report</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
