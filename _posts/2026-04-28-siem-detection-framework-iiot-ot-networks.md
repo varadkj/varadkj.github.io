@@ -1,6 +1,6 @@
 ---
 title: "Building a Purdue-Aware SIEM for IIoT/OT Networks"
-date: 2026-04-28 12:00:00 -0400
+date: 2026-04-27 12:00:00 -0400
 categories: [Capstone, ICS/OT Security]
 tags: [siem, ics, ot, purdue, mitre-attack, iec-62443, zeek, ton-iot, detection-engineering]
 pin: true
