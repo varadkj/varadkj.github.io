@@ -2,6 +2,8 @@
 title: "StreamIO - HackTheBox Writeup"
 date: 2026-05-08
 tags: [HTB, Windows, Medium, MSSQL, SQLi, UNION, LFI, RFI, RCE, LAPS, BloodHound, Active Directory]
+image: /assets/img/posts/streamio/banner.png
+
 ---
 
 # StreamIO — HackTheBox (Medium)
