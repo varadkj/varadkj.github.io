@@ -2,6 +2,8 @@
 title: "Voleur - HackTheBox Writeup"
 date: 2026-05-12
 tags: [HTB, Windows, Medium, Active Directory, Kerberos, WriteSPN, Kerberoast, AD Tombstone, DPAPI, WSL, NTDS, RunasCs, BloodHound]
+image: assets/img/posts/voleur/banner.png
+
 ---
 
 # Voleur — HackTheBox Writeup
