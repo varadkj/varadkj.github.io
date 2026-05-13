@@ -2,6 +2,8 @@
 title: "Silentium - HackTheBox Writeup"
 date: 2026-05-06
 tags: [HTB, Linux, Medium, Flowise, CVE, Account Takeover, RCE, Docker, Gogs, Symlink, SSH]
+image: /assets/img/posts/silentium/banner.png
+
 ---
 
 # Silentium — HackTheBox Writeup
