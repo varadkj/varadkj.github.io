@@ -3,7 +3,7 @@ title: "Silentium - HackTheBox Writeup"
 date: 2026-05-06
 tags: [HTB, Linux, Medium, Flowise, CVE, Account Takeover, RCE, Docker, Gogs, Symlink, SSH]
 image: /assets/img/posts/silentium/banner.png
-
+description: "Walkthrough of HackTheBox Silentium — a medium Linux box chaining Flowise account takeover (CVE-2025-58434) and RCE (GHSA-3gcm-f6qx-ff7p) with Docker container escape and Gogs symlink arbitrary file write (CVE-2025-8110) for root."
 ---
 
 # Silentium — HackTheBox Writeup
