@@ -226,3 +226,6 @@ jekyll-archives:
 
 plugins:
   - jekyll-seo-tag
+
+include:
+  - googleec7e4ae4c74ce9a8.html
